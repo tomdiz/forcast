@@ -27,28 +27,46 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
         self.indLoading.startAnimating()
 
-        Alamofire.request(.GET, "https://api.forecast.io/forecast/API_KEY_HERE/42.366978,-71.022362")
-            .responseJSON { response in
-                print(response.request)  // original URL request
-                
+        Alamofire.request("https://api.forecast.io/forecast/API_KEY_HERE/42.366978,-71.022362", method: .get, parameters: nil, encoding: JSONEncoding.default, headers: nil).responseJSON { (response:DataResponse<Any>) in
+            
+            switch(response.result) {
+            case .success(_):
                 if let JSON = response.result.value {
                     
-                    print("JSON: \(JSON)")
-
+                    //print("JSON: \(JSON)")
+                    
                     // Current forcast
-                    let current = CurrentForecast(JSONDecoder(response.data!))
+                    do {
 
-                    self.lblSummary.text = current.summary
-                    self.lblTempurature.text = String(Int(current.temperature!)) + "\u{00B0}"
-                    self.imgIcon.image = current.getIcon()
+                        let current = try CurrentForecast(JSONDecoder(response.data!))
+                        self.lblSummary.text = current.summary
+                        self.lblTempurature.text = String(Int(current.temperature!)) + "\u{00B0}"
+                        self.imgIcon.image = current.getIcon()
+                    } catch {
+                        
+                        print("Error getting forcast from server!")
+                    }
 
                     // Forcast next 5 days
-                    self.dailys = DailyForecasts(JSONDecoder(response.data!))
+                    do {
+                        
+                        self.dailys = try DailyForecasts(JSONDecoder(response.data!))
+                    } catch {
+                        
+                        print("Error getting 5 day forcast from server!")
+                    }
                     
                     self.tblDailyForcasts.reloadData()
                     
                     self.indLoading.stopAnimating()
                 }
+                break
+                
+            case .failure(_):
+                print(response.result.error!)
+                break
+                
+            }
         }
     }
 
@@ -58,12 +76,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Dispose of any resources that can be recreated.
     }
 
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
     
         return 1
     }
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         if (dailys == nil) {
             
@@ -75,9 +93,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("daily_forcast_cell", forIndexPath: indexPath) as! DailyForecastTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "daily_forcast_cell", for: indexPath) as! DailyForecastTableViewCell
         let forecast = dailys?.dailyforecasts![indexPath.row]
         cell.lblTempMin.text = String(Int((forecast?.temperatureMin!)!)) + "\u{00B0}"
         cell.lblTempMax.text = String(Int((forecast?.temperatureMax!)!)) + "\u{00B0}"

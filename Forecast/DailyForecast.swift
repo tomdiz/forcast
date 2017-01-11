@@ -21,12 +21,12 @@ struct DailyForecast : JSONJoy {
         
     }
     
-    init(_ decoder: JSONDecoder) {
+    init(_ decoder: JSONDecoder) throws {
         
-        icon = decoder["icon"].string
-        summary = decoder["summary"].string
-        temperatureMin = decoder["temperatureMin"].float
-        temperatureMax = decoder["temperatureMax"].float
-        time = decoder["time"].integer
+        icon = try decoder["icon"].get()
+        summary = try decoder["summary"].get()
+        temperatureMin = try decoder["temperatureMin"].get()
+        temperatureMax = try decoder["temperatureMax"].get()
+        time = try decoder["time"].get()
     }
 }

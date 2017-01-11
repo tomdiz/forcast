@@ -21,13 +21,13 @@ struct CurrentForecast : JSONJoy {
         
     }
 
-    init(_ decoder: JSONDecoder) {
+    init(_ decoder: JSONDecoder) throws {
 
-        apparentTemperature = decoder["currently"]["apparentTemperature"].float
-        icon = decoder["currently"]["icon"].string
-        summary = decoder["currently"]["summary"].string
-        temperature = decoder["currently"]["temperature"].float
-        time = decoder["currently"]["time"].integer
+        apparentTemperature = try decoder["currently"]["apparentTemperature"].get()
+        icon = try decoder["currently"]["icon"].get()
+        summary = try decoder["currently"]["summary"].get()
+        temperature = try decoder["currently"]["temperature"].get()
+        time = try decoder["currently"]["time"].get()
     }
     
     func getIcon() -> UIImage {

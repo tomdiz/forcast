@@ -17,15 +17,13 @@ struct DailyForecasts : JSONJoy {
         
     }
     
-    init(_ decoder: JSONDecoder) {
+    init(_ decoder: JSONDecoder) throws {
         
-        if let forcasts = decoder["daily"]["data"].array {
+        let forcasts = decoder["daily"]["data"].getOptionalArray()
+        dailyforecasts = Array<DailyForecast>()
+        for forecastDecoder in forcasts! {
             
-            dailyforecasts = Array<DailyForecast>()
-            for forecastDecoder in forcasts {
-                
-                dailyforecasts?.append(DailyForecast(forecastDecoder))
-            }
+            dailyforecasts?.append(try DailyForecast(forecastDecoder))
         }
     }
 }
